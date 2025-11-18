@@ -1,0 +1,243 @@
+<!-- crud_app/templates/crud_app/checkout.html -->
+{% extends 'crud_app/base.html' %}
+
+{% block title %}Checkout - StreamAccounts{% endblock %}
+
+{% block contenido %}
+<div class="checkout-page">
+<div class="hero-section">
+  <div class="container text-center">
+    <h1 class="hero-title">💳 Finalizar Compra</h1>
+    <p class="hero-subtitle">Completa tu pedido de manera segura</p>
+    <p class="text-white-50">Pago seguro • Entrega inmediata • Soporte 24/7</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="row g-4">
+    <!-- Formulario de Checkout -->
+    <div class="col-lg-8">
+      <div class="product-card">
+        <h3 class="text-white mb-4">📝 Información de Contacto</h3>
+        <form method="post" class="checkout-form">
+          {% csrf_token %}
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="{{ form.nombre.id_for_label }}" class="form-label text-white">Nombre Completo</label>
+              {{ form.nombre }}
+              {% if form.nombre.errors %}
+                <div class="text-danger small">{{ form.nombre.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label for="{{ form.email.id_for_label }}" class="form-label text-white">Correo Electrónico</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                <div class="text-danger small">{{ form.email.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label for="{{ form.telefono.id_for_label }}" class="form-label text-white">Teléfono</label>
+              {{ form.telefono }}
+              {% if form.telefono.errors %}
+                <div class="text-danger small">{{ form.telefono.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-md-6">
+              <label for="{{ form.direccion.id_for_label }}" class="form-label text-white">Dirección</label>
+              {{ form.direccion }}
+              {% if form.direccion.errors %}
+                <div class="text-danger small">{{ form.direccion.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="col-12">
+              <label for="{{ form.notas.id_for_label }}" class="form-label text-white">Notas Adicionales (Opcional)</label>
+              {{ form.notas }}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Resumen del Pedido -->
+    <div class="col-lg-4">
+      <div class="product-card sticky-top">
+        <h4 class="text-white mb-4">🛒 Resumen del Pedido</h4>
+
+        {% if productos %}
+        <div class="checkout-items">
+          {% for item in productos %}
+          <div class="checkout-item d-flex align-items-center mb-3">
+            <div class="item-logo me-3">
+              {% if item.producto.is_combo_win %}
+                <div style="display: flex; align-items: center; gap: 2px;">
+                  <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_main }}" alt="{{ item.producto.get_servicio_display }}" style="width: 25px; height: 25px; object-fit: contain;">
+                  <span style="font-size: 0.7rem; font-weight: bold; color: #fff;">+</span>
+                  <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_win }}" alt="Win+" style="width: 25px; height: 25px; object-fit: contain;">
+                </div>
+              {% elif item.producto.get_logo %}
+                <img src="{{ MEDIA_URL }}{{ item.producto.get_logo }}" alt="{{ item.producto.get_servicio_display }}" style="width: 35px; height: 35px; object-fit: contain;">
+              {% elif 'spotify' in item.producto.servicio %}
+                <svg class="spotify-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="30" height="30" aria-hidden="true">
+                  <circle cx="50" cy="50" r="50" fill="#1DB954" />
+                  <path d="M30 40c15-8 30-8 40 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                  <path d="M25 53c20-10 40-10 55 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                  <path d="M20 66c25-12 50-12 70 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                </svg>
+              {% else %}
+                📺
+              {% endif %}
+            </div>
+            <div class="item-info flex-grow-1">
+              <div class="text-white small fw-bold">{{ item.producto.nombre }}</div>
+              <div class="text-muted small">{{ item.cantidad }} x ${{ item.producto.precio }}</div>
+            </div>
+            <div class="item-total text-white fw-bold">${{ item.subtotal }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <hr class="my-3" style="border-color: rgba(255,255,255,0.1);">
+
+        <div class="checkout-total">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Subtotal</span>
+            <span class="text-white">${{ total }}</span>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="text-muted">Envío</span>
+            <span class="text-success">GRATIS</span>
+          </div>
+          <hr class="my-2" style="border-color: rgba(255,255,255,0.1);">
+          <div class="d-flex justify-content-between">
+            <span class="text-white fw-bold fs-5">Total</span>
+            <span class="price-tag fs-4">${{ total }}</span>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <button type="submit" form="checkout-form" class="btn btn-add-cart btn-lg w-100">
+            <i class="fas fa-lock me-2"></i>Confirmar Compra
+          </button>
+          <a href="{% url 'ver_carrito' %}" class="btn btn-outline-secondary w-100 mt-2">
+            <i class="fas fa-arrow-left me-2"></i>Volver al Carrito
+          </a>
+        </div>
+
+        <div class="mt-4 pt-3 border-separator">
+          <div class="text-center">
+            <div class="text-muted small mb-2">Pago seguro con</div>
+            <div class="d-flex justify-content-center gap-2">
+              <i class="fab fa-cc-visa text-white fa-2x"></i>
+              <i class="fab fa-cc-mastercard text-white fa-2x"></i>
+              <i class="fab fa-cc-paypal text-white fa-2x"></i>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+          <p class="text-muted">No hay productos en el carrito</p>
+          <a href="{% url 'index' %}" class="btn btn-primary">Ir al Catálogo</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container text-center py-5">
+  <p class="text-white-50">© 2025 StreamAccounts - Compra Segura Garantizada</p>
+</div>
+
+</div> {# .checkout-page end #}
+
+<style>
+.checkout-form .form-label {
+  font-weight: 600;
+}
+
+.checkout-form .form-control {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+}
+
+.checkout-form .form-control:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: var(--primary-color);
+  color: white;
+}
+
+.checkout-form .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.checkout-items {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* Forzar textos blancos y alto contraste dentro de la página de checkout */
+.checkout-page { color: #ffffff; --text-color: #ffffff; --text-muted: rgba(255,255,255,0.75); }
+.checkout-page h1, .checkout-page h2, .checkout-page h3, .checkout-page h4, .checkout-page h5, .checkout-page h6,
+.checkout-page label, .checkout-page p, .checkout-page .form-label, .checkout-page .producto-nombre, .checkout-page .item-info,
+.checkout-page .item-total, .checkout-page .price-tag, .checkout-page .badge, .checkout-page small {
+  color: #ffffff !important;
+}
+.checkout-page .text-muted { color: rgba(255,255,255,0.75) !important; }
+.checkout-page .text-white-50 { color: rgba(255,255,255,0.6) !important; }
+.checkout-page .checkout-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.04); }
+.checkout-page .btn, .checkout-page .btn-outline-secondary { color: #fff !important; }
+
+
+.checkout-item {
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-logo {
+  width: 50px;
+  text-align: center;
+}
+
+.checkout-total {
+  margin-top: 1rem;
+}
+
+.btn-outline-secondary {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.btn-outline-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+@media (max-width: 991px) {
+  .sticky-top {
+    position: static !important;
+  }
+}
+</style>
+
+<script>
+// Añadir id al form para submit desde el botón
+document.addEventListener('DOMContentLoaded', function() {
+  const form = document.querySelector('.checkout-form');
+  if (form) {
+    form.id = 'checkout-form';
+  }
+});
+</script>
+{% endblock %}

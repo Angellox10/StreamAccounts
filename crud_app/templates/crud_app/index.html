@@ -1,0 +1,297 @@
+{% extends 'crud_app/base.html' %}
+
+{% block title %}StreamAccounts - Cuentas Premium{% endblock %}
+
+{% block contenido %}
+<div class="hero-section">
+  <div class="container text-center">
+    <h1 class="hero-title">🎬 StreamAccounts</h1>
+    <p class="hero-subtitle">Cuentas Premium de Streaming, Música, Deportes y Más</p>
+    <p class="text-white-50">Acceso inmediato • Precios competitivos • Soporte 24/7</p>
+  </div>
+</div>
+
+<div class="container">
+  {% if productos_streaming %}
+  <div class="category-section">
+    <h2 class="category-title"><span class="category-icon">🎬</span>Plataformas de Streaming</h2>
+    <div class="row g-4">
+      {% for producto in productos_streaming %}
+      <div class="col-md-4 col-lg-3">
+        <div class="product-card position-relative">
+          {% if producto.stock > 0 %}
+            <span class="stock-badge">✓ Disponible</span>
+          {% else %}
+            <span class="stock-badge no-stock">Agotado</span>
+          {% endif %}
+          
+          <div class="text-center service-icon" style="margin-bottom: 20px; min-height: 120px; display: flex; align-items: center; justify-content: center;">
+            {% if producto.is_combo_win %}
+              <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 95%;">
+                <img src="{{ MEDIA_URL }}{{ producto.get_combo_logo_main }}" alt="{{ producto.get_servicio_display }}" style="width: 45%; max-width: 90px; height: auto; max-height: 110px; object-fit: contain;">
+                <span style="font-size: 1.5rem; font-weight: bold; color: #6366f1;">+</span>
+                <img src="{{ MEDIA_URL }}{{ producto.get_combo_logo_win }}" alt="Win+" style="width: 45%; max-width: 90px; height: auto; max-height: 110px; object-fit: contain;">
+              </div>
+            {% elif producto.get_logo %}
+              <img src="{{ MEDIA_URL }}{{ producto.get_logo }}" alt="{{ producto.get_servicio_display }}" style="width: 95%; max-width: 170px; height: auto; max-height: 130px; object-fit: contain;">
+            {% elif 'netflix' in producto.servicio %}🔴
+            {% elif 'disney' in producto.servicio %}🔵
+            {% elif 'hbo' in producto.servicio or 'max' in producto.servicio %}🟢
+            {% elif 'prime' in producto.servicio %}💙
+            {% elif 'apple' in producto.servicio %}🍎
+            {% elif 'paramount' in producto.servicio %}🟤
+            {% elif 'crunchyroll' in producto.servicio %}🔶
+            {% else %}📺
+            {% endif %}
+          </div>
+          
+          <h3 class="product-title">{{ producto.get_servicio_display }}</h3>
+          <p class="product-info">{{ producto.tipo_pantalla }}</p>
+          <div class="duration-badge">⏱ {{ producto.duracion_dias }} días</div>
+          <div class="price-tag">${{ producto.precio|floatformat:0 }}</div>
+          
+          {% if producto.stock > 0 %}
+            <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-add-cart">
+              🛒 Agregar al carrito
+            </a>
+          {% else %}
+            <button class="btn btn-add-cart" disabled style="opacity: 0.5;">
+              Sin stock
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if productos_deportes %}
+  <div class="category-section">
+    <h2 class="category-title"><span class="category-icon">⚽</span>Deportes y Eventos</h2>
+    <div class="row g-4">
+      {% for producto in productos_deportes %}
+      <div class="col-md-4 col-lg-3">
+        <div class="product-card position-relative">
+          {% if producto.stock > 0 %}
+            <span class="stock-badge">✓ Disponible</span>
+          {% else %}
+            <span class="stock-badge no-stock">Agotado</span>
+          {% endif %}
+          
+          <div class="text-center service-icon" style="margin-bottom: 20px; min-height: 120px; display: flex; align-items: center; justify-content: center;">
+            {% if producto.get_logo %}
+              <img src="{{ MEDIA_URL }}{{ producto.get_logo }}" alt="{{ producto.get_servicio_display }}" style="width: 95%; max-width: 170px; height: auto; max-height: 130px; object-fit: contain;">
+            {% else %}
+              ⚽
+            {% endif %}
+          </div>
+          
+          <h3 class="product-title">{{ producto.get_servicio_display }}</h3>
+          <p class="product-info">{{ producto.tipo_pantalla }}</p>
+          <div class="duration-badge">⏱ {{ producto.duracion_dias }} días</div>
+          <div class="price-tag">${{ producto.precio|floatformat:0 }}</div>
+          
+          {% if producto.stock > 0 %}
+            <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-add-cart">
+              🛒 Agregar al carrito
+            </a>
+          {% else %}
+            <button class="btn btn-add-cart" disabled style="opacity: 0.5;">
+              Sin stock
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if productos_musica %}
+  <div class="category-section">
+    <h2 class="category-title"><span class="category-icon">🎵</span>Música y Audio</h2>
+    <div class="row g-4">
+      {% for producto in productos_musica %}
+      <div class="col-md-4 col-lg-3">
+        <div class="product-card position-relative">
+          {% if producto.stock > 0 %}
+            <span class="stock-badge">✓ Disponible</span>
+          {% else %}
+            <span class="stock-badge no-stock">Agotado</span>
+          {% endif %}
+          
+          <div class="text-center service-icon" style="margin-bottom: 20px;">
+            {% if producto.get_logo %}
+              <img src="{{ MEDIA_URL }}{{ producto.get_logo }}" alt="{{ producto.get_servicio_display }}" style="width: 120px; height: 120px; object-fit: contain;">
+            {% elif 'spotify' in producto.servicio %}
+              <svg class="service-logo-spotify" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
+                <circle cx="50" cy="50" r="50" fill="#1DB954" />
+                <path d="M30 40c15-8 30-8 40 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                <path d="M25 53c20-10 40-10 55 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                <path d="M20 66c25-12 50-12 70 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+              </svg>
+            {% elif 'youtube' in producto.servicio %}🔴
+            {% else %}🎵
+            {% endif %}
+          </div>
+          
+          <h3 class="product-title" style="margin-bottom: 12px;">{{ producto.get_servicio_display }}</h3>
+          <p class="product-info" style="margin-bottom: 15px;">{{ producto.tipo_pantalla }}</p>
+          <div class="duration-badge" style="margin-bottom: 15px;">⏱ {{ producto.duracion_dias }} días</div>
+          <div class="price-tag" style="margin-bottom: 15px;">${{ producto.precio|floatformat:0 }}</div>
+          
+          {% if producto.stock > 0 %}
+            <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-add-cart">
+              🛒 Agregar al carrito
+            </a>
+          {% else %}
+            <button class="btn btn-add-cart" disabled style="opacity: 0.5;">
+              Sin stock
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if productos_combos_win %}
+  <div class="category-section">
+    <h2 class="category-title"><span class="category-icon">⚽</span>Combos Deportivos Win+</h2>
+    <p class="text-center text-white-50 mb-4">Paquetes especiales con Win Sports incluido</p>
+    <div class="row g-4">
+      {% for producto in productos_combos_win %}
+      <div class="col-md-4 col-lg-3">
+        <div class="product-card position-relative" style="border: 2px solid #10b981;">
+          {% if producto.stock > 0 %}
+            <span class="stock-badge" style="background: #10b981;">✓ Disponible</span>
+          {% else %}
+            <span class="stock-badge no-stock">Agotado</span>
+          {% endif %}
+          
+          <div class="text-center service-icon" style="margin-bottom: 20px; min-height: 120px; display: flex; align-items: center; justify-content: center;">
+            {% if producto.is_combo_win and producto.get_combo_logo_main %}
+            <div style="display: flex; align-items: center; justify-content: center; gap: 10px; padding: 15px; background: rgba(16, 185, 129, 0.1); border-radius: 12px; width: 95%;">
+              <img src="{{ MEDIA_URL }}{{ producto.get_combo_logo_main }}" alt="{{ producto.get_servicio_display }}" style="width: 45%; max-width: 90px; height: auto; max-height: 110px; object-fit: contain;">
+              <span style="font-size: 1.8rem; font-weight: bold; color: #10b981;">+</span>
+              <img src="{{ MEDIA_URL }}{{ producto.get_combo_logo_win }}" alt="Win+" style="width: 45%; max-width: 90px; height: auto; max-height: 110px; object-fit: contain;">
+            </div>
+            {% else %}
+            ⚽
+            {% endif %}
+          </div>
+          
+          <h3 class="product-title">{{ producto.get_servicio_display }}</h3>
+          <p class="product-info">{{ producto.tipo_pantalla }}</p>
+          <div class="duration-badge">⏱ {{ producto.duracion_dias }} días</div>
+          <div class="price-tag">${{ producto.precio|floatformat:0 }}</div>
+          
+          {% if producto.stock > 0 %}
+            <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-add-cart" style="background: linear-gradient(135deg, #10b981, #059669);">
+              🛒 Agregar al carrito
+            </a>
+          {% else %}
+            <button class="btn btn-add-cart" disabled style="opacity: 0.5;">
+              Sin stock
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if productos_iptv %}
+  <div class="category-section">
+    <h2 class="category-title"><span class="category-icon">📡</span>IPTV y Televisión</h2>
+    <div class="row g-4">
+      {% for producto in productos_iptv %}
+      <div class="col-md-4 col-lg-3">
+        <div class="product-card position-relative">
+          {% if producto.stock > 0 %}
+            <span class="stock-badge">✓ Disponible</span>
+          {% else %}
+            <span class="stock-badge no-stock">Agotado</span>
+          {% endif %}
+          
+          <div class="text-center service-icon" style="margin-bottom: 20px;">
+            {% if producto.get_logo %}
+              <img src="{{ MEDIA_URL }}{{ producto.get_logo }}" alt="{{ producto.get_servicio_display }}" style="width: 120px; height: 120px; object-fit: contain;">
+            {% else %}
+              📡
+            {% endif %}
+          </div>
+          
+          <h3 class="product-title" style="margin-bottom: 12px;">{{ producto.get_servicio_display }}</h3>
+          <p class="product-info" style="margin-bottom: 15px;">{{ producto.tipo_pantalla }}</p>
+          <div class="duration-badge" style="margin-bottom: 15px;">⏱ {{ producto.duracion_dias }} días</div>
+          <div class="price-tag" style="margin-bottom: 15px;">${{ producto.precio|floatformat:0 }}</div>
+          
+          {% if producto.stock > 0 %}
+            <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-add-cart">
+              🛒 Agregar al carrito
+            </a>
+          {% else %}
+            <button class="btn btn-add-cart" disabled style="opacity: 0.5;">
+              Sin stock
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if productos_otros %}
+  <div class="category-section">
+    <h2 class="category-title"><span class="category-icon">✨</span>Otros Servicios</h2>
+    <div class="row g-4">
+      {% for producto in productos_otros %}
+      <div class="col-md-4 col-lg-3">
+        <div class="product-card position-relative">
+          {% if producto.stock > 0 %}
+            <span class="stock-badge">✓ Disponible</span>
+          {% else %}
+            <span class="stock-badge no-stock">Agotado</span>
+          {% endif %}
+          
+          <div class="text-center service-icon" style="margin-bottom: 20px;">
+            {% if producto.get_logo %}
+              <img src="{{ MEDIA_URL }}{{ producto.get_logo }}" alt="{{ producto.get_servicio_display }}" style="width: 120px; height: 120px; object-fit: contain;">
+            {% elif 'chatgpt' in producto.servicio %}🤖
+            {% elif 'canva' in producto.servicio %}🎨
+            {% else %}✨
+            {% endif %}
+          </div>
+          
+          <h3 class="product-title" style="margin-bottom: 12px;">{{ producto.get_servicio_display }}</h3>
+          <p class="product-info" style="margin-bottom: 15px;">{{ producto.tipo_pantalla }}</p>
+          <div class="duration-badge" style="margin-bottom: 15px;">⏱ {{ producto.duracion_dias }} días</div>
+          <div class="price-tag" style="margin-bottom: 15px;">${{ producto.precio|floatformat:0 }}</div>
+          
+          {% if producto.stock > 0 %}
+            <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-add-cart">
+              🛒 Agregar al carrito
+            </a>
+          {% else %}
+            <button class="btn btn-add-cart" disabled style="opacity: 0.5;">
+              Sin stock
+            </button>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div class="container text-center py-5">
+  <p class="text-white-50">© 2025 StreamAccounts - Todos los derechos reservados</p>
+</div>
+
+{% endblock %}

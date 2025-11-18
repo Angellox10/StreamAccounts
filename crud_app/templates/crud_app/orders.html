@@ -1,0 +1,48 @@
+{% extends 'crud_app/base.html' %}
+{% block contenido %}
+<div class="container mt-4">
+  <h2>Mis Órdenes</h2>
+  {% if ordenes %}
+    <table class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Fecha</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Productos</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for orden in ordenes %}
+        <tr>
+          <td>{{ orden.id }}</td>
+          <td>{{ orden.creado_el|date:"d/m/Y H:i" }}</td>
+          <td>${{ orden.total }}</td>
+          <td>{{ orden.get_estado_display }}</td>
+          <td>
+            <ul>
+              {% for item in orden.items.all %}
+                <li>
+                  {% if item.producto.is_combo_win %}
+                    <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_main }}" alt="{{ item.producto.get_servicio_display }}" style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle; margin-right: 3px;">
+                    <span style="font-size: 0.8rem; font-weight: bold;">+</span>
+                    <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_win }}" alt="Win+" style="width: 20px; height: 20px; object-fit: contain; vertical-align: middle; margin-right: 5px;">
+                  {% elif item.producto.get_logo %}
+                    <img src="{{ MEDIA_URL }}{{ item.producto.get_logo }}" alt="{{ item.producto.get_servicio_display }}" style="width: 25px; height: 25px; object-fit: contain; vertical-align: middle; margin-right: 5px;">
+                  {% endif %}
+                  {{ item.cantidad }} x {{ item.producto.nombre }} (${{ item.precio_unitario }})
+                </li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No tienes órdenes registradas.</p>
+  {% endif %}
+  <a href="{% url 'lista_productos' %}" class="btn btn-secondary mt-3">Volver al catálogo</a>
+</div>
+{% endblock %}

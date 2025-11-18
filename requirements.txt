@@ -1,0 +1,4 @@
+Django==5.2.7
+Pillow>=9.0.0
+# Añade aquí otras dependencias si las usas (ej. django-environ, gunicorn)
+python-decouple>=4.8.0

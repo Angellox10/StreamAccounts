@@ -1,0 +1,250 @@
+<!-- crud_app/templates/crud_app/carrito.html -->
+{% extends 'crud_app/base.html' %}
+{% load custom_filters %}
+{% block contenido %}
+<div class="container carrito-container mt-5 mb-5">
+  <div class="carrito-header-frame">
+    <div class="carrito-header glass-card">
+      <h2>🛒 Mi Carrito de Compras</h2>
+      <p class="text-muted" style="color: rgba(255, 255, 255, 0.8) !important;">Revisa tus productos antes de finalizar la compra</p>
+    </div>
+  </div>
+
+  {% if productos %}
+    <div class="row">
+      <!-- Lista de productos -->
+      <div class="col-lg-8">
+        <div class="carrito-items-frame">
+          <div class="section-header">
+            <h4 class="section-title">📦 Productos en tu Carrito</h4>
+          </div>
+          <div class="carrito-items glass-card">
+            {% for item in productos %}
+            <div class="carrito-item item-frame">
+              <div class="row align-items-center">
+                <!-- Imagen del producto -->
+                <div class="col-md-2 text-center">
+                  <div class="producto-img-container img-frame">
+                    {% if item.producto.is_combo_win %}
+                      <div style="display: flex; align-items: center; justify-content: center; gap: 3px; padding: 10px;">
+                        <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_main }}" alt="{{ item.producto.get_servicio_display }}" style="width: 30px; height: 30px; object-fit: contain;">
+                        <span style="font-size: 0.9rem; font-weight: bold; color: #fff;">+</span>
+                        <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_win }}" alt="Win+" style="width: 30px; height: 30px; object-fit: contain;">
+                      </div>
+                    {% elif item.producto.get_logo %}
+                      <img src="{{ MEDIA_URL }}{{ item.producto.get_logo }}" alt="{{ item.producto.get_servicio_display }}" class="producto-img" style="padding: 10px;">
+                    {% elif item.producto.imagen %}
+                      <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}" class="producto-img">
+                    {% elif 'spotify' in item.producto.servicio %}
+                      <svg class="spotify-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="48" height="48" aria-hidden="true">
+                        <circle cx="50" cy="50" r="50" fill="#1DB954" />
+                        <path d="M30 40c15-8 30-8 40 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                        <path d="M25 53c20-10 40-10 55 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                        <path d="M20 66c25-12 50-12 70 0" stroke="#fff" stroke-width="4" stroke-linecap="round" fill="none" />
+                      </svg>
+                    {% else %}
+                      <div class="placeholder-img">
+                        <i class="fas fa-tv"></i>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Información del producto -->
+                <div class="col-md-5">
+                  <div class="producto-info">
+                    <span class="badge-servicio badge-frame">{{ item.producto.get_servicio_display }}</span>
+                    <h5 class="producto-nombre">{{ item.producto.nombre }}</h5>
+                    <p class="producto-detalles">
+                      <i class="fas fa-tag"></i> {{ item.producto.get_categoria_display }}
+                      {% if item.producto.duracion_dias %}
+                        <br><i class="fas fa-clock"></i> {{ item.producto.duracion_dias }} días
+                      {% endif %}
+                      {% if item.producto.tipo_pantalla %}
+                        <br><i class="fas fa-desktop"></i> {{ item.producto.tipo_pantalla }}
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Cantidad -->
+                <div class="col-md-2 text-center">
+                  <div class="cantidad-control cantidad-frame">
+                    <label class="small text-muted d-block mb-2" style="color: white !important;">Cantidad</label>
+                    <div class="cantidad-buttons">
+                      <button class="btn-cantidad btn-disminuir" data-href="{% url 'disminuir_cantidad' item.producto.pk %}" aria-label="Disminuir cantidad">
+                        ➖
+                      </button>
+                      <span class="cantidad-display">{{ item.cantidad }}</span>
+                      <button class="btn-cantidad btn-aumentar" data-href="{% url 'aumentar_cantidad' item.producto.pk %}" aria-label="Aumentar cantidad">
+                        ➕
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Precio -->
+                <div class="col-md-3 text-end">
+                  <div class="precio-info precio-frame">
+                    <div class="precio-unitario">
+                      <span class="small" style="color: rgba(255, 255, 255, 0.7) !important;">Precio unitario:</span>
+                      <div class="precio">${{ item.producto.precio|floatformat:0 }}</div>
+                    </div>
+                    <div class="subtotal">
+                      <span class="small" style="color: rgba(255, 255, 255, 0.7) !important;">Subtotal:</span>
+                      <div class="precio-total">${{ item.subtotal|floatformat:0 }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% if not forloop.last %}
+            <div class="item-separator"></div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen del pedido -->
+      <div class="col-lg-4">
+        <div class="resumen-frame">
+          <div class="resumen-pedido glass-card sticky-top">
+            <div class="section-header">
+              <h4 class="resumen-titulo">📋 Resumen del Pedido</h4>
+            </div>
+
+            <div class="resumen-detalles resumen-content-frame">
+              <div class="detalle-row">
+                <span>Subtotal ({{ productos|length }} producto{{ productos|length|pluralize }})</span>
+                <span class="fw-bold">${{ total|floatformat:0 }}</span>
+              </div>
+
+              <div class="detalle-row">
+                <span>Envío</span>
+                <span class="badge bg-success envio-badge">GRATIS</span>
+              </div>
+
+              <hr class="my-3 separator-line">
+
+              <div class="detalle-row total-row total-frame">
+                <span class="fw-bold fs-5">Total</span>
+                <span class="fw-bold fs-4 gradient-text">${{ total|floatformat:0 }}</span>
+              </div>
+            </div>
+
+            <div class="resumen-acciones acciones-frame">
+              <a href="{% url 'checkout' %}" class="btn btn-checkout btn-lg w-100 mb-3">
+                <i class="fas fa-lock me-2"></i>Proceder al Checkout
+              </a>
+              <a href="{% url 'index' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+              </a>
+            </div>
+
+            <div class="garantia-info garantia-frame">
+              <div class="garantia-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Compra 100% segura</span>
+              </div>
+              <div class="garantia-item">
+                <i class="fas fa-undo"></i>
+                <span>Garantía de reembolso</span>
+              </div>
+              <div class="garantia-item">
+                <i class="fas fa-headset"></i>
+                <span>Soporte 24/7</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <!-- Carrito vacío -->
+    <div class="carrito-vacio text-center py-5 empty-frame">
+      <div class="empty-icon mb-4">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <h3 class="mb-3">Tu carrito está vacío</h3>
+      <p class="text-muted mb-4">¡Explora nuestro catálogo y encuentra las mejores cuentas de streaming!</p>
+      <a href="{% url 'index' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-store me-2"></i>Ir al Catálogo
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+/* Carrito: adapta estilos globales definidos en static/css/styles.css
+   Usamos las variables y tokens globales para mantener consistencia
+*/
+.carrito-container{ max-width: 1200px; margin: 0 auto; color: #ffffff; --text-color: #ffffff; --secondary-text: rgba(255,255,255,0.9); --text-muted: rgba(255,255,255,0.75); }
+.carrito-header-frame .glass-card{ border-radius:16px; padding:1.4rem; border:1px solid rgba(255,255,255,0.06); background: rgba(30,41,59,0.9); box-shadow: 0 10px 40px rgba(0,0,0,0.35); }
+.carrito-header h2{ font-size:2rem; font-weight:800; color:var(--text-color); margin-bottom:0.25rem }
+.carrito-header p{ color:var(--text-muted); margin:0 }
+
+.carrito-items-frame .glass-card{ padding:1rem; border-radius:12px; background: var(--card-bg); border:1px solid rgba(255,255,255,0.04); }
+.item-frame{ display:block; padding:1rem; border-radius:12px; background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); }
+.item-frame:hover{ transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,0.35); }
+
+.producto-img-container{ width:92px; height:92px; border-radius:12px; overflow:hidden; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg,var(--primary-color), var(--secondary-color)); }
+.producto-img{ width:100%; height:100%; object-fit:contain }
+
+.producto-nombre{ font-size:1.05rem; color: var(--text-color); font-weight:700; margin-bottom:0.3rem }
+.producto-detalles{ color: var(--secondary-text); font-size:0.92rem; }
+
+.cantidad-control{ display:flex; flex-direction:column; gap:0.4rem; align-items:center; justify-content:center }
+.cantidad-buttons{ display:flex; align-items:center; gap:0.5rem }
+.btn-cantidad{ width:40px; height:40px; border-radius:10px; display:inline-flex; align-items:center; justify-content:center; border:none; cursor:pointer; color:var(--text-color); font-size:1.1rem }
+.btn-aumentar{ background: linear-gradient(135deg,var(--success-color), #059669); }
+.btn-disminuir{ background: linear-gradient(135deg,var(--danger-color), #b91c1c); }
+.btn-cantidad:focus{ outline:3px solid rgba(99,102,241,0.18); }
+.cantidad-display{ min-width:36px; text-align:center; font-weight:700; color:var(--text-color); background: rgba(255,255,255,0.03); padding:0.4rem 0.6rem; border-radius:8px }
+
+.precio-frame{ text-align:right; padding:0.6rem; border-radius:10px; background: rgba(255,255,255,0.02); border-left: 3px solid var(--primary-color); }
+.precio{ color:var(--text-color); font-weight:700 }
+.precio-total{ color: var(--text-color); font-size:1.2rem; font-weight:800 }
+
+.badge-servicio{ background: rgba(99,102,241,0.12); color:var(--text-color); padding:0.25rem 0.6rem; border-radius:999px; font-weight:700; font-size:0.8rem }
+.envio-badge{ background: linear-gradient(135deg,var(--success-color), #059669); color:#042f1a; font-weight:700 }
+
+.btn-checkout{ background: linear-gradient(135deg,var(--primary-color),var(--secondary-color)); color:#fff; border:none; padding:0.8rem 1rem; border-radius:10px; font-weight:800 }
+.btn-outline-secondary{ color:#ddd; border-color: rgba(255,255,255,0.06); background: transparent }
+
+.resumen-pedido{ padding:1rem }
+.resumen-frame .glass-card{ border-radius:12px; padding:1rem; background: var(--card-bg); border:1px solid rgba(255,255,255,0.04); }
+.resumen-titulo{ color:var(--text-color); font-weight:800 }
+.detalle-row{ color: var(--text-color); }
+.total-frame{ background: linear-gradient(90deg, rgba(99,102,241,0.06), rgba(139,92,246,0.06)); padding:0.8rem; border-radius:8px }
+
+.item-separator{ height:1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent); margin:1rem 0 }
+
+.carrito-vacio{ background: var(--card-bg); color:var(--text-color); border-radius:12px; padding:2.5rem }
+
+@media (max-width:991px){ .carrito-header h2{ font-size:1.6rem } .producto-img-container{ width:76px; height:76px } .precio-total{ font-size:1rem } }
+@media (max-width:767px){ .col-md-5, .col-md-3, .col-md-2{ width:100%; display:block } .carrito-item{ padding:0.85rem } .carrito-header-frame .glass-card{ padding:1rem } }
+</style>
+
+<script>
+// Mejor UX: usa fetch hacia endpoints data-href sin disparar mensajes SweetAlert
+document.addEventListener('DOMContentLoaded', function(){
+  function ajaxTo(url){
+    fetch(url, { method: 'GET', headers: { 'X-Requested-With':'XMLHttpRequest' } })
+      .then(function(response){
+        // Si es petición exitosa, recargar para reflejar cambios (evita emergente)
+        if(response.ok) location.reload(); else location.reload();
+      })
+      .catch(function(){ window.location.href = url; });
+  }
+
+  document.querySelectorAll('.btn-aumentar, .btn-disminuir').forEach(function(btn){
+    btn.addEventListener('click', function(e){
+      e.preventDefault();
+      var href = btn.getAttribute('data-href');
+      if(href) ajaxTo(href);
+    });
+  });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,178 @@
+{% extends 'crud_app/base.html' %}
+{% load custom_filters %}
+
+{% block title %}Gestión de Órdenes - Admin{% endblock %}
+
+{% block contenido %}
+<div class="admin-container">
+  <div class="container py-4">
+    
+    <div class="admin-header mb-4">
+      <h1 class="admin-title">📦 Gestión de Órdenes</h1>
+      <p class="admin-subtitle">Administración y seguimiento de todos los pedidos</p>
+      <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary mt-2">
+        ← Volver al Dashboard
+      </a>
+    </div>
+
+    <!-- Filtros -->
+    <div class="admin-section mb-4">
+      <h3 class="section-title">🔍 Filtrar Órdenes</h3>
+      <div class="filter-buttons">
+        <a href="{% url 'admin_orders' %}" class="btn {% if not estado_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">
+          Todas ({{ ordenes.count }})
+        </a>
+        <a href="{% url 'admin_orders' %}?estado=pendiente" class="btn {% if estado_filter == 'pendiente' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+          Pendientes
+        </a>
+        <a href="{% url 'admin_orders' %}?estado=procesando" class="btn {% if estado_filter == 'procesando' %}btn-info{% else %}btn-outline-info{% endif %}">
+          Procesando
+        </a>
+        <a href="{% url 'admin_orders' %}?estado=completada" class="btn {% if estado_filter == 'completada' %}btn-success{% else %}btn-outline-success{% endif %}">
+          Completadas
+        </a>
+        <a href="{% url 'admin_orders' %}?estado=cancelada" class="btn {% if estado_filter == 'cancelada' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+          Canceladas
+        </a>
+      </div>
+    </div>
+
+    <!-- Tabla de Órdenes -->
+    <div class="admin-section">
+      <div class="table-responsive">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Usuario</th>
+              <th>Items</th>
+              <th>Total</th>
+              <th>Estado</th>
+              <th>Fecha</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for orden in ordenes %}
+            <tr>
+              <td><strong>#{{ orden.id }}</strong></td>
+              <td>
+                <div>{{ orden.usuario.username }}</div>
+                <small class="text-muted">{{ orden.usuario.email }}</small>
+              </td>
+              <td>{{ orden.items.count }} productos</td>
+              <td class="price-cell">${{ orden.total|floatformat:0 }}</td>
+              <td>
+                <span class="badge badge-{{ orden.estado }}">
+                  {{ orden.get_estado_display }}
+                </span>
+              </td>
+              <td>{{ orden.creado_el|date:"d/m/Y H:i" }}</td>
+              <td>
+                <button class="btn-mini" onclick="toggleOrderDetails({{ orden.id }})">
+                  Ver Detalles
+                </button>
+                <button class="btn-mini btn-edit" onclick="showChangeStatus({{ orden.id }}, '{{ orden.estado }}')">
+                  Cambiar Estado
+                </button>
+              </td>
+            </tr>
+            <tr id="details-{{ orden.id }}" class="order-details" style="display: none;">
+              <td colspan="7">
+                <div class="details-content">
+                  <h5>Productos de la orden #{{ orden.id }}</h5>
+                  <table class="details-table">
+                    <thead>
+                      <tr>
+                        <th>Logo</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Precio Unitario</th>
+                        <th>Subtotal</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for item in orden.items.all %}
+                      <tr>
+                        <td>
+                          {% if item.producto.is_combo_win %}
+                            <div style="display: flex; align-items: center; gap: 3px;">
+                              <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_main }}" alt="{{ item.producto.get_servicio_display }}" style="width: 25px; height: 25px; object-fit: contain;">
+                              <span style="font-size: 0.8rem; font-weight: bold;">+</span>
+                              <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_win }}" alt="Win+" style="width: 25px; height: 25px; object-fit: contain;">
+                            </div>
+                          {% elif item.producto.get_logo %}
+                            <img src="{{ MEDIA_URL }}{{ item.producto.get_logo }}" alt="{{ item.producto.get_servicio_display }}" style="width: 40px; height: 40px; object-fit: contain;">
+                          {% else %}
+                            📺
+                          {% endif %}
+                        </td>
+                        <td>{{ item.producto.nombre }}</td>
+                        <td>{{ item.cantidad }}</td>
+                        <td>${{ item.precio_unitario|floatformat:0 }}</td>
+                        <td>${{ item.cantidad|multiply:item.precio_unitario|floatformat:0 }}</td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="7" class="text-center py-4">
+                <p class="text-muted">No hay órdenes para mostrar</p>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal para cambiar estado -->
+<div id="statusModal" class="modal-overlay" style="display: none;" onclick="hideChangeStatus()">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <h3>Cambiar Estado de Orden</h3>
+    <form id="statusForm" method="POST">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Nuevo Estado:</label>
+        <select name="estado" class="form-control" required>
+          <option value="pendiente">Pendiente</option>
+          <option value="procesando">Procesando</option>
+          <option value="completada">Completada</option>
+          <option value="cancelada">Cancelada</option>
+        </select>
+      </div>
+      <div class="modal-buttons">
+        <button type="submit" class="btn btn-primary">Actualizar</button>
+        <button type="button" class="btn btn-secondary" onclick="hideChangeStatus()">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleOrderDetails(orderId) {
+  const detailsRow = document.getElementById('details-' + orderId);
+  detailsRow.style.display = detailsRow.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function showChangeStatus(orderId, currentStatus) {
+  const modal = document.getElementById('statusModal');
+  const form = document.getElementById('statusForm');
+  form.action = `/admin-panel/order/${orderId}/update/`;
+  form.querySelector('select[name="estado"]').value = currentStatus;
+  modal.style.display = 'flex';
+}
+
+function hideChangeStatus() {
+  document.getElementById('statusModal').style.display = 'none';
+}
+</script>
+
+{% endblock %}

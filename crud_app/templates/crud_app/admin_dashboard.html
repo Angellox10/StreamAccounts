@@ -1,0 +1,197 @@
+{% extends 'crud_app/base.html' %}
+
+{% block title %}Panel de Administración - StreamAccounts{% endblock %}
+
+{% block contenido %}
+<div class="admin-container">
+  <div class="container py-4">
+    
+    <!-- Header del Panel -->
+    <div class="admin-header mb-4">
+      <h1 class="admin-title">⚙️ Panel de Administración</h1>
+      <p class="admin-subtitle">Gestión completa de la plataforma StreamAccounts</p>
+      <div class="mt-3">
+        <a href="/admin/" target="_blank" class="btn btn-django-admin">
+          🔐 Acceder a Django Admin
+        </a>
+      </div>
+    </div>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-value">{{ total_productos }}</div>
+          <div class="stat-label">Total Productos</div>
+          <div class="stat-sublabel">{{ productos_activos }} activos</div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon">🛒</div>
+          <div class="stat-value">{{ total_ordenes }}</div>
+          <div class="stat-label">Total Órdenes</div>
+          <div class="stat-sublabel">{{ ordenes_pendientes }} pendientes</div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-value">${{ ingresos_totales|floatformat:0 }}</div>
+          <div class="stat-label">Ingresos Totales</div>
+          <div class="stat-sublabel">{{ ordenes_completadas }} completadas</div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value">{{ total_usuarios }}</div>
+          <div class="stat-label">Usuarios</div>
+          <div class="stat-sublabel">{{ usuarios_con_ordenes }} con compras</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Acciones Rápidas -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-12">
+        <div class="admin-section">
+          <h3 class="section-title">🚀 Acciones Rápidas</h3>
+          <div class="action-buttons">
+            <a href="{% url 'admin_orders' %}" class="btn btn-action">
+              📋 Ver Todas las Órdenes
+            </a>
+            <a href="{% url 'lista_productos' %}" class="btn btn-action">
+              📦 Gestionar Productos
+            </a>
+            <a href="{% url 'crear_producto' %}" class="btn btn-action">
+              ➕ Crear Nuevo Producto
+            </a>
+            <a href="/admin/crud_app/producto/" target="_blank" class="btn btn-action">
+              ✏️ Admin Productos
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alertas de Stock -->
+    {% if productos_bajo_stock %}
+    <div class="row g-4 mb-4">
+      <div class="col-md-12">
+        <div class="admin-section alert-section">
+          <h3 class="section-title">⚠️ Productos con Bajo Stock</h3>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Producto</th>
+                  <th>Servicio</th>
+                  <th>Stock</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for producto in productos_bajo_stock %}
+                <tr>
+                  <td>{{ producto.nombre }}</td>
+                  <td>{{ producto.get_servicio_display }}</td>
+                  <td><span class="badge badge-warning">{{ producto.stock }}</span></td>
+                  <td>
+                    <a href="{% url 'actualizar_producto' producto.pk %}" class="btn-mini">Editar</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Órdenes Recientes -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-12">
+        <div class="admin-section">
+          <h3 class="section-title">📦 Órdenes Recientes</h3>
+          <div class="table-responsive">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Usuario</th>
+                  <th>Total</th>
+                  <th>Estado</th>
+                  <th>Fecha</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for orden in ordenes_recientes %}
+                <tr>
+                  <td><strong>#{{ orden.id }}</strong></td>
+                  <td>{{ orden.usuario.username }}</td>
+                  <td>${{ orden.total|floatformat:0 }}</td>
+                  <td>
+                    <span class="badge badge-{{ orden.estado }}">
+                      {{ orden.get_estado_display }}
+                    </span>
+                  </td>
+                  <td>{{ orden.creado_el|date:"d/m/Y H:i" }}</td>
+                  <td>
+                    <a href="{% url 'admin_orders' %}" class="btn-mini">Ver</a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          <div class="text-center mt-3">
+            <a href="{% url 'admin_orders' %}" class="btn btn-primary">Ver Todas las Órdenes →</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Productos Más Vendidos -->
+    <div class="row g-4 mb-4">
+      <div class="col-md-6">
+        <div class="admin-section">
+          <h3 class="section-title">🏆 Productos Más Vendidos</h3>
+          <div class="stats-list">
+            {% for item in productos_vendidos %}
+            <div class="stats-item">
+              {% if item.producto.get_logo %}
+                <img src="{{ MEDIA_URL }}{{ item.producto.get_logo }}" alt="{{ item.producto.get_servicio_display }}" style="width: 30px; height: 30px; object-fit: contain; vertical-align: middle; margin-right: 10px;">
+              {% endif %}
+              <span class="stats-name">{{ item.producto.nombre }}</span>
+              <span class="stats-value">{{ item.total_vendido }} vendidos</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="admin-section">
+          <h3 class="section-title">📊 Productos por Categoría</h3>
+          <div class="stats-list">
+            {% for cat in stats_categorias %}
+            <div class="stats-item">
+              <span class="stats-name">{{ cat.categoria|upper }}</span>
+              <span class="stats-value">{{ cat.total }} productos ({{ cat.activos }} activos)</span>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

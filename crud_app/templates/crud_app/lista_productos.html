@@ -1,0 +1,89 @@
+<!-- crud_app/templates/crud_app/lista_productos.html -->
+{% extends 'crud_app/base.html' %}
+
+{% block title %}Catálogo de Productos - StreamAccounts{% endblock %}
+
+{% block contenido %}
+<div class="hero-section">
+  <div class="container text-center">
+    <h1 class="hero-title">📋 Catálogo de Productos</h1>
+    <p class="hero-subtitle">Gestión completa de cuentas premium</p>
+    <p class="text-white-50">Administra tu inventario • Actualiza precios • Controla stock</p>
+  </div>
+</div>
+
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-white">Productos Disponibles</h2>
+    <a href="{% url 'crear_producto' %}" class="btn btn-primary">
+      ➕ Crear Nuevo Producto
+    </a>
+  </div>
+
+  {% if productos %}
+  <div class="row g-4">
+    {% for producto in productos %}
+    <div class="col-md-6 col-lg-4">
+      <div class="product-card position-relative">
+        {% if producto.stock > 0 %}
+          <span class="stock-badge">✓ Disponible</span>
+        {% else %}
+          <span class="stock-badge no-stock">Agotado</span>
+        {% endif %}
+
+        <div class="text-center service-icon" style="margin-bottom: 20px; min-height: 120px; display: flex; align-items: center; justify-content: center;">
+          {% if producto.is_combo_win %}
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 95%;">
+              <img src="{{ MEDIA_URL }}{{ producto.get_combo_logo_main }}" alt="{{ producto.get_servicio_display }}" style="width: 45%; max-width: 80px; height: auto; max-height: 100px; object-fit: contain;">
+              <span style="font-size: 1.5rem; font-weight: bold; color: #6366f1;">+</span>
+              <img src="{{ MEDIA_URL }}{{ producto.get_combo_logo_win }}" alt="Win+" style="width: 45%; max-width: 80px; height: auto; max-height: 100px; object-fit: contain;">
+            </div>
+          {% elif producto.get_logo %}
+            <img src="{{ MEDIA_URL }}{{ producto.get_logo }}" alt="{{ producto.get_servicio_display }}" style="width: 95%; max-width: 150px; height: auto; max-height: 120px; object-fit: contain;">
+          {% elif producto.imagen %}
+            <img src="{{ producto.imagen.url }}" alt="{{ producto.nombre }}" style="width: 120px; height: 120px; object-fit: contain;">
+          {% else %}
+            📦
+          {% endif %}
+        </div>
+
+        <h3 class="product-title">{{ producto.get_servicio_display }}</h3>
+        <p class="product-info">{{ producto.tipo_pantalla }}</p>
+        <div class="duration-badge">⏱ {{ producto.duracion_dias }} días</div>
+        <div class="price-tag">${{ producto.precio|floatformat:0 }}</div>
+        <div class="text-white small mb-3">Stock: {{ producto.stock }}</div>
+
+        <div class="d-flex gap-2 flex-wrap">
+          <a href="{% url 'producto_detalle' producto.pk %}" class="btn btn-info btn-sm">
+            👁 Ver Detalles
+          </a>
+          <a href="{% url 'actualizar_producto' producto.pk %}" class="btn btn-warning btn-sm">
+            ✏ Editar
+          </a>
+          <a href="{% url 'eliminar_producto' producto.pk %}" class="btn btn-danger btn-sm">
+            🗑 Eliminar
+          </a>
+          {% if producto.stock > 0 %}
+          <a href="{% url 'agregar_al_carrito' producto.pk %}" class="btn btn-success btn-sm">
+            🛒 Añadir al Carrito
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <h3 class="text-white-50">No hay productos disponibles</h3>
+    <p class="text-white-50">Crea tu primer producto para comenzar.</p>
+    <a href="{% url 'crear_producto' %}" class="btn btn-primary">Crear Producto</a>
+  </div>
+  {% endif %}
+</div>
+
+<div class="container text-center py-5">
+  <p class="text-white-50">© 2025 StreamAccounts - Panel de Administración</p>
+</div>
+
+{% endblock %}

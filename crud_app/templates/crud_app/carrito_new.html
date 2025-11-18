@@ -1,0 +1,568 @@
+<!-- crud_app/templates/crud_app/carrito.html -->
+{% extends 'crud_app/base.html' %}
+{% load custom_filters %}
+{% block contenido %}
+<div class="container carrito-container mt-5 mb-5">
+  <div class="carrito-header-frame">
+    <div class="carrito-header glass-card">
+      <h2>🛒 Mi Carrito de Compras</h2>
+      <p class="text-muted">Revisa tus productos antes de finalizar la compra</p>
+    </div>
+  </div>
+
+  {% if productos %}
+    <div class="row">
+      <!-- Lista de productos -->
+      <div class="col-lg-8">
+        <div class="carrito-items-frame">
+          <div class="section-header">
+            <h4 class="section-title">📦 Productos en tu Carrito</h4>
+          </div>
+          <div class="carrito-items glass-card">
+            {% for item in productos %}
+            <div class="carrito-item item-frame">
+              <div class="row align-items-center">
+                <!-- Imagen del producto -->
+                <div class="col-md-2 text-center">
+                  <div class="producto-img-container img-frame">
+                    {% if item.producto.is_combo_win %}
+                      <div style="display: flex; align-items: center; justify-content: center; gap: 3px; padding: 10px;">
+                        <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_main }}" alt="{{ item.producto.get_servicio_display }}" style="width: 30px; height: 30px; object-fit: contain;">
+                        <span style="font-size: 0.9rem; font-weight: bold; color: #fff;">+</span>
+                        <img src="{{ MEDIA_URL }}{{ item.producto.get_combo_logo_win }}" alt="Win+" style="width: 30px; height: 30px; object-fit: contain;">
+                      </div>
+                    {% elif item.producto.get_logo %}
+                      <img src="{{ MEDIA_URL }}{{ item.producto.get_logo }}" alt="{{ item.producto.get_servicio_display }}" class="producto-img" style="padding: 10px;">
+                    {% elif item.producto.imagen %}
+                      <img src="{{ item.producto.imagen.url }}" alt="{{ item.producto.nombre }}" class="producto-img">
+                    {% else %}
+                      <div class="placeholder-img">
+                        <i class="fas fa-tv"></i>
+                      </div>
+                    {% endif %}
+                  </div>
+                </div>
+
+                <!-- Información del producto -->
+                <div class="col-md-5">
+                  <div class="producto-info">
+                    <span class="badge-servicio badge-frame">{{ item.producto.get_servicio_display }}</span>
+                    <h5 class="producto-nombre">{{ item.producto.nombre }}</h5>
+                    <p class="producto-detalles">
+                      <i class="fas fa-tag"></i> {{ item.producto.get_categoria_display }}
+                      {% if item.producto.duracion_dias %}
+                        <br><i class="fas fa-clock"></i> {{ item.producto.duracion_dias }} días
+                      {% endif %}
+                      {% if item.producto.tipo_pantalla %}
+                        <br><i class="fas fa-desktop"></i> {{ item.producto.tipo_pantalla }}
+                      {% endif %}
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Cantidad -->
+                <div class="col-md-2 text-center">
+                  <div class="cantidad-control cantidad-frame">
+                    <label class="small text-muted d-block mb-2">Cantidad</label>
+                    <div class="cantidad-badge">
+                      {{ item.cantidad }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Precio -->
+                <div class="col-md-3 text-end">
+                  <div class="precio-info precio-frame">
+                    <div class="precio-unitario">
+                      <span class="small text-muted">Precio unitario:</span>
+                      <div class="precio">${{ item.producto.precio|floatformat:0 }}</div>
+                    </div>
+                    <div class="subtotal">
+                      <span class="small text-muted">Subtotal:</span>
+                      <div class="precio-total">${{ item.subtotal|floatformat:0 }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% if not forloop.last %}
+            <div class="item-separator"></div>
+            {% endif %}
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Resumen del pedido -->
+      <div class="col-lg-4">
+        <div class="resumen-frame">
+          <div class="resumen-pedido glass-card sticky-top">
+            <div class="section-header">
+              <h4 class="resumen-titulo">📋 Resumen del Pedido</h4>
+            </div>
+
+            <div class="resumen-detalles resumen-content-frame">
+              <div class="detalle-row">
+                <span>Subtotal ({{ productos|length }} producto{{ productos|length|pluralize }})</span>
+                <span class="fw-bold">${{ total|floatformat:0 }}</span>
+              </div>
+
+              <div class="detalle-row">
+                <span>Envío</span>
+                <span class="badge bg-success envio-badge">GRATIS</span>
+              </div>
+
+              <hr class="my-3 separator-line">
+
+              <div class="detalle-row total-row total-frame">
+                <span class="fw-bold fs-5">Total</span>
+                <span class="fw-bold fs-4 gradient-text">${{ total|floatformat:0 }}</span>
+              </div>
+            </div>
+
+            <div class="resumen-acciones acciones-frame">
+              <a href="{% url 'checkout' %}" class="btn btn-checkout btn-lg w-100 mb-3">
+                <i class="fas fa-lock me-2"></i>Proceder al Checkout
+              </a>
+              <a href="{% url 'index' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-arrow-left me-2"></i>Seguir Comprando
+              </a>
+            </div>
+
+            <div class="garantia-info garantia-frame">
+              <div class="garantia-item">
+                <i class="fas fa-shield-alt"></i>
+                <span>Compra 100% segura</span>
+              </div>
+              <div class="garantia-item">
+                <i class="fas fa-undo"></i>
+                <span>Garantía de reembolso</span>
+              </div>
+              <div class="garantia-item">
+                <i class="fas fa-headset"></i>
+                <span>Soporte 24/7</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  {% else %}
+    <!-- Carrito vacío -->
+    <div class="carrito-vacio text-center py-5 empty-frame">
+      <div class="empty-icon mb-4">
+        <i class="fas fa-shopping-cart"></i>
+      </div>
+      <h3 class="mb-3">Tu carrito está vacío</h3>
+      <p class="text-muted mb-4">¡Explora nuestro catálogo y encuentra las mejores cuentas de streaming!</p>
+      <a href="{% url 'index' %}" class="btn btn-primary btn-lg">
+        <i class="fas fa-store me-2"></i>Ir al Catálogo
+      </a>
+    </div>
+  {% endif %}
+</div>
+
+<style>
+/* Estilos del carrito */
+.carrito-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.carrito-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.carrito-header h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 0.5rem;
+}
+
+.carrito-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.carrito-item {
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+}
+
+.carrito-item:hover {
+  transform: translateX(5px);
+  border-left-color: var(--primary-color);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+}
+
+.producto-img-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.producto-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.placeholder-img {
+  font-size: 2rem;
+  color: white;
+}
+
+.badge-servicio {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: inline-block;
+  margin-bottom: 0.5rem;
+}
+
+.producto-nombre {
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.producto-detalles {
+  color: var(--secondary-text);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.8;
+}
+
+.producto-detalles i {
+  color: var(--primary-color);
+  margin-right: 0.25rem;
+}
+
+.cantidad-control {
+  background: rgba(99, 102, 241, 0.05);
+  padding: 1rem;
+  border-radius: 12px;
+}
+
+.cantidad-badge {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 auto;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.precio-info {
+  text-align: right;
+}
+
+.precio-unitario,
+.subtotal {
+  margin-bottom: 0.5rem;
+}
+
+.precio {
+  font-size: 1rem;
+  color: var(--text-color);
+  font-weight: 600;
+}
+
+.precio-total {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Resumen del pedido */
+.resumen-pedido {
+  padding: 2rem;
+  position: sticky;
+  top: 100px;
+}
+
+.resumen-titulo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.resumen-detalles {
+  margin-bottom: 2rem;
+}
+
+.detalle-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  color: var(--text-color);
+}
+
+.total-row {
+  padding-top: 1rem;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.btn-checkout {
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-weight: 600;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+}
+
+.btn-checkout:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+  color: white;
+}
+
+.garantia-info {
+  border-top: 1px solid rgba(99, 102, 241, 0.1);
+  padding-top: 1.5rem;
+}
+
+.garantia-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  color: var(--secondary-text);
+  font-size: 0.9rem;
+}
+
+.garantia-item i {
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+/* Carrito vacío */
+.carrito-vacio {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 4rem 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.empty-icon {
+  font-size: 5rem;
+  color: var(--primary-color);
+  opacity: 0.3;
+}
+
+/* ============================================
+   MARCOS Y FRAMES PARA MEJOR EXPERIENCIA VISUAL
+   ============================================ */
+
+.carrito-header-frame {
+  margin-bottom: 2rem;
+}
+
+.carrito-header-frame .glass-card {
+  border: 2px solid rgba(99, 102, 241, 0.3);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.2);
+}
+
+.carrito-items-frame {
+  margin-bottom: 2rem;
+}
+
+.carrito-items-frame .glass-card {
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.15);
+}
+
+.section-header {
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(99, 102, 241, 0.3);
+}
+
+.section-title {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.item-frame {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.3s ease;
+}
+
+.item-frame:hover {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.1);
+  transform: translateX(2px);
+}
+
+.item-separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.3), transparent);
+  margin: 1rem 0;
+}
+
+.img-frame {
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+}
+
+.badge-frame {
+  border: 1px solid rgba(99, 102, 241, 0.5);
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.2);
+}
+
+.cantidad-frame {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: rgba(99, 102, 241, 0.05);
+}
+
+.precio-frame {
+  border-left: 3px solid var(--primary-color);
+  padding-left: 1rem;
+  background: rgba(99, 102, 241, 0.02);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.resumen-frame {
+  position: sticky;
+  top: 100px;
+}
+
+.resumen-frame .glass-card {
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2);
+}
+
+.resumen-content-frame {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  margin-bottom: 1.5rem;
+}
+
+.total-frame {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.acciones-frame {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.garantia-frame {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1.5rem;
+  background: rgba(16, 185, 129, 0.05);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.garantia-frame .garantia-item {
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  background: rgba(16, 185, 129, 0.05);
+}
+
+.empty-frame {
+  border: 2px solid rgba(99, 102, 241, 0.2);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.1);
+}
+
+.envio-badge {
+  border: 1px solid #22c55e;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+}
+
+.separator-line {
+  border-color: rgba(99, 102, 241, 0.3);
+  border-width: 2px;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+  .carrito-item .row > div {
+    margin-bottom: 1rem;
+  }
+  
+  .col-md-3.text-end {
+    text-align: center !important;
+  }
+  
+  .resumen-pedido {
+    margin-top: 2rem;
+    position: static;
+  }
+}
+
+@media (max-width: 767px) {
+  .carrito-header h2 {
+    font-size: 2rem;
+  }
+  
+  .producto-img-container {
+    width: 60px;
+    height: 60px;
+  }
+  
+  .precio-total {
+    font-size: 1.25rem;
+  }
+}
+</style>
+{% endblock %}
