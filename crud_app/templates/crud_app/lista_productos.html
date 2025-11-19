@@ -20,6 +20,16 @@
     </a>
   </div>
 
+  <!-- Filtro por categoría -->
+  <div class="mb-4">
+    <div class="btn-group" role="group" aria-label="Filtro de categorías">
+      <a href="{% url 'lista_productos' %}" class="btn btn-outline-light {% if not categoria_seleccionada %}active{% endif %}">Todos</a>
+      {% for key,label in categorias %}
+        <a href="{% url 'lista_productos' %}?categoria={{ key }}" class="btn btn-outline-light {% if categoria_seleccionada == key %}active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
   {% if productos %}
   <div class="row g-4">
     {% for producto in productos %}

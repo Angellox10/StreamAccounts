@@ -219,11 +219,24 @@ def disminuir_cantidad(request, pk):
 
 
 # Visitar para listar todos los productos (SOLO ADMINISTRADORES)
-@staff_member_required(login_url='login')
+@login_required(login_url='login')
 def listar_productos(request):
-    # Mostrar solo productos con stock disponible
-    productos = Producto.objects.filter(stock__gt=0).order_by('-creado_el')
-    return render(request, 'crud_app/lista_productos.html', {'productos': productos})
+    # Mostrar productos (con opción de filtrar por categoría)
+    categoria = request.GET.get('categoria', '').strip()
+    productos_qs = Producto.objects.filter(stock__gt=0)
+    if categoria:
+        productos_qs = productos_qs.filter(categoria=categoria)
+    productos = productos_qs.order_by('-creado_el')
+
+    # Preparar lista de categorías para el filtro (clave, etiqueta)
+    categorias = Producto.CATEGORIA_CHOICES
+
+    context = {
+        'productos': productos,
+        'categorias': categorias,
+        'categoria_seleccionada': categoria,
+    }
+    return render(request, 'crud_app/lista_productos.html', context)
 
 # Visitar para crear un nuevo producto
 @staff_member_required(login_url='login')
@@ -317,7 +330,7 @@ def register_user(request):
     return render(request, 'crud_app/register.html')
 
 # Vista de detalle de producto
-@staff_member_required(login_url='login')
+@login_required(login_url='login')
 def producto_detalle(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
     return render(request, 'crud_app/producto_detalle.html', {'producto': producto})
